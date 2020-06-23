@@ -4,7 +4,7 @@ const Author = require('../models/author');
 
 router.get('/', async (req, res)=>{
     let searchOptions = {}
-    if(req.query.name != null && req.query.name != '')
+    if(req.query.name)
         searchOptions.name = new RegExp(req.query.name, 'i');
     try{
         let authors = await Author.find(searchOptions);
@@ -17,7 +17,7 @@ router.get('/', async (req, res)=>{
     }
 });
 
-router.get('/new', (req, res)=>{
+router.get('/new', async (req, res)=>{
     res.render('authors/new', { author: new Author()})
 });
 
