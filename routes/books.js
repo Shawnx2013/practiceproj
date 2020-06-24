@@ -3,10 +3,11 @@ const router = express.Router();
 const path = require('path');
 const Author = require('../models/author');
 const Book = require('../models/book');
-const multer = require('multer');
-const fs = require('fs');
+//const multer = require('multer');
+//const fs = require('fs');
 
 const imageMimeTypes = ['image/jpeg', 'image/png', 'image/gif'];
+/*
 const uploadPath = path.join('public', Book.coverImagePath);
 const multerUpload = multer({
     dest: uploadPath,
@@ -18,11 +19,11 @@ const multerUpload = multer({
         else
             callback(new Error('File is not an image'), false);
     }
-});
+});*/
 
 router.get('/', async (req, res)=>{
     let query = Book.find();
-    console.log(req.query);
+    //console.log(req.query);
     if(req.query.title){
         query = query.regex('title', new RegExp(req.query.title, 'i'))
     }
@@ -49,37 +50,25 @@ router.get('/new', async (req, res)=>{
     renderNewBookPage(res, new Book())
 });
 
-router.post("/new", multerUpload.single('cover'), async (req, res)=>{
-    //console.log(req.file);
-    const fileName = req.file != null ? req.file.filename : ''
+router.post("/new", async (req, res)=>{
     const book = new Book({
         title: req.body.title,
         author: req.body.author,
         publishDate: new Date(req.body.publishDate),
         pageCount: req.body.pageCount,
-        coverImageName: fileName,
-        description: req.body.description,
-
+        description: req.body.description
     });
-    //console.log(fileName);
-    //console.log(book);
+    saveCover(book, req.body.cover);
     try{
         const newBook = await book.save();
         //res.redirect('books/$(newBook.id}')
         res.redirect('/books')
     }catch(e) {
-        if(book.coverImageName)
-            removeBookCover(book.coverImageName);
         renderNewBookPage(res, book, true);
         console.log(e)
     }
 });
 
-function removeBookCover(fileName){
-    fs.unlink(path.join(uploadPath, fileName), err => {
-        if(err) console.error(err);
-    })
-}
 
 async function renderNewBookPage(res, book, hasError = false){
     try{
@@ -94,6 +83,16 @@ async function renderNewBookPage(res, book, hasError = false){
         res.render('books/new', params)
     }catch{
         res.redirect('/books');
+    }
+}
+
+function saveCover(book, coverEncoded){
+    if(coverEncoded == null) return;
+    const cover = JSON.parse(coverEncoded)
+    if(cover!=null && imageMimeTypes.includes(cover.type)){
+        book.coverImage = new Buffer.from(cover.data, 'base64');
+        book.coverImageType = cover.type;
+
     }
 }
 
