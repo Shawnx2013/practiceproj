@@ -28,11 +28,11 @@ router.get('/', async (req, res)=>{
         query = query.regex('title', new RegExp(req.query.title, 'i'))
     }
     if(req.query.publishedBefore){
-        console.log('published before filter');
+        //console.log('published before filter');
         query = query.lte('publishDate', req.query.publishedBefore)
     }
     if(req.query.publishedAfter){
-        console.log('published after filter');
+        //console.log('published after filter');
         query = query.gte('publishDate', req.query.publishedAfter)
     }
     try{
@@ -65,7 +65,7 @@ router.post("/new", async (req, res)=>{
         res.redirect('/books')
     }catch(e) {
         renderNewBookPage(res, book, true);
-        console.log(e)
+        //console.log(e)
     }
 });
 
